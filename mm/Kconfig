@@ -134,6 +134,24 @@ config HAVE_MEMBLOCK
 config HAVE_MEMBLOCK_NODE_MAP
 	bool
 
+config ANON_MIN_KBYTES
+    int "Default value for vm.anon_min_kbytes"
+    depends on SYSCTL
+    range 0 4294967295
+    default 0
+
+config CLEAN_LOW_KBYTES
+    int "Default value for vm.clean_low_kbytes"
+    depends on SYSCTL
+    range 0 4294967295
+    default 0
+
+config CLEAN_MIN_KBYTES
+    int "Default value for vm.clean_min_kbytes"
+    depends on SYSCTL
+    range 0 4294967295
+    default 0
+
 config HAVE_MEMBLOCK_PHYS_MAP
 	bool
 
