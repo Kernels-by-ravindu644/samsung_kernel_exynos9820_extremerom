@@ -38,8 +38,8 @@ jobs:
 
       - name: Build
         run: |
-          chmod +x build_kernel.sh
-          ./build_kernel.sh --model ${{ matrix.model }} --oneui ${{ matrix.oneui }} --no-menuconfig
+          chmod +x build.sh
+          ./build.sh --model ${{ matrix.model }} --oneui ${{ matrix.oneui }} --no-menuconfig
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
