@@ -71,7 +71,7 @@ log "BUILD STARTED for model: ${MODEL} (${DEVICE_CONFIG})"
 git submodule update --init --recursive --remote --no-recommend-shallow
 
 # Customization
-KERNEL_NAME="ExtremeKernel-KSUNv3.2.0-Droidspaces"
+KERNEL_NAME="ExtremeKernel-KSUNv3.4.0-Droidspaces"
 BUILD_DATE="$(date +"%d-%m-%Y_%H-%M-%S")"
 
 # Export core variables
