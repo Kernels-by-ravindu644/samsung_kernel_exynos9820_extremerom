@@ -762,6 +762,21 @@ static int config_usb_cfg_unlink(
 			return 0;
 		}
 	}
+#ifdef CONFIG_USB_CONFIGFS_UEVENT
+	/*
+	 * ponytail: traditional path leaves the function in linked_func
+	 * (never selected via android%d/functions); look there too so
+	 * rm'ing the symlink doesn't leak it.
+	 */
+	list_for_each_entry(f, &gi->linked_func, list) {
+		if (f->fi == fi) {
+			list_del(&f->list);
+			usb_put_function(f);
+			mutex_unlock(&gi->lock);
+			return 0;
+		}
+	}
+#endif
 	mutex_unlock(&gi->lock);
 	WARN(1, "Unable to locate function to unbind\n");
 	return 0;
@@ -1581,6 +1596,19 @@ static int configfs_composite_bind(struct usb_gadget *gadget,
 		struct config_usb_cfg *cfg;
 
 		cfg = container_of(c, struct config_usb_cfg, c);
+#ifdef CONFIG_USB_CONFIGFS_UEVENT
+		/*
+		 * ponytail: traditional path - "ln -s func configs/c.N/"
+		 * stages the function in gi->linked_func (Samsung UEVENT
+		 * behaviour), never in cfg->func_list. Android fills
+		 * func_list via android%d/functions before writing UDC, so
+		 * func_list is non-empty there and this never fires.
+		 * Single-config gadgets only; a multi-config manual gadget
+		 * should use the android%d/functions selector.
+		 */
+		if (list_empty(&cfg->func_list))
+			list_splice_tail_init(&gi->linked_func, &cfg->func_list);
+#endif
 		if (list_empty(&cfg->func_list)) {
 			pr_err("Config %s/%d of %s needs at least one function.\n",
 			      c->label, c->bConfigurationValue,
