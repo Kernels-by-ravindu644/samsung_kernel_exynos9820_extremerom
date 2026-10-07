@@ -69,12 +69,47 @@ static DEFINE_MUTEX(nf_hook_mutex);
 #define nf_entry_dereference(e) \
 	rcu_dereference_protected(e, lockdep_is_held(&nf_hook_mutex))
 
+struct nf_hook_entries_rcu_head {
+	struct rcu_head head;
+	void	*allocation;
+};
+
+static void __nf_hook_entries_free(struct rcu_head *h)
+{
+	struct nf_hook_entries_rcu_head *head;
+
+	head = container_of(h, struct nf_hook_entries_rcu_head, head);
+	kvfree(head->allocation);
+}
+
+/* The rcu head lives in the tail of the allocation, after the hook ops
+ * pointers, so freeing an old blob costs no synchronize_net(): with one
+ * grace period per hook, a new network namespace, which registers dozens
+ * of hooks, used to take hundreds of milliseconds to create.
+ */
+static void nf_hook_entries_free(struct nf_hook_entries *e)
+{
+	struct nf_hook_entries_rcu_head *head;
+	struct nf_hook_ops **ops;
+	unsigned int num;
+
+	if (!e)
+		return;
+
+	num = e->num_hook_entries;
+	ops = nf_hook_entries_get_hook_ops(e);
+	head = (void *)&ops[num];
+	head->allocation = e;
+	call_rcu(&head->head, __nf_hook_entries_free);
+}
+
 static struct nf_hook_entries *allocate_hook_entries_size(u16 num)
 {
 	struct nf_hook_entries *e;
 	size_t alloc = sizeof(*e) +
 		       sizeof(struct nf_hook_entry) * num +
-		       sizeof(struct nf_hook_ops *) * num;
+		       sizeof(struct nf_hook_ops *) * num +
+		       sizeof(struct nf_hook_entries_rcu_head);
 
 	if (num == 0)
 		return NULL;
@@ -292,9 +327,8 @@ int nf_register_net_hook(struct net *net, const struct nf_hook_ops *reg)
 #ifdef HAVE_JUMP_LABEL
 	static_key_slow_inc(&nf_hooks_needed[reg->pf][reg->hooknum]);
 #endif
-	synchronize_net();
 	BUG_ON(p == new_hooks);
-	kvfree(p);
+	nf_hook_entries_free(p);
 	return 0;
 }
 EXPORT_SYMBOL(nf_register_net_hook);
@@ -369,7 +403,7 @@ void nf_unregister_net_hook(struct net *net, const struct nf_hook_ops *reg)
 	nfq = nf_queue_nf_hook_drop(net);
 	if (nfq)
 		synchronize_net();
-	kvfree(p);
+	nf_hook_entries_free(p);
 }
 EXPORT_SYMBOL(nf_unregister_net_hook);
 
@@ -447,7 +481,7 @@ void nf_unregister_net_hooks(struct net *net, const struct nf_hook_ops *reg,
 				synchronize_net();
 
 			for (i = 0; i < j; i++)
-				kvfree(to_free[i]);
+				nf_hook_entries_free(to_free[i]);
 		}
 
 		reg += n;
