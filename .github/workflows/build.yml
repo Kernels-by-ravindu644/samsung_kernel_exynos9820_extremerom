@@ -74,7 +74,9 @@ jobs:
           name: ${{ steps.tag.outputs.name }}
           files: artifacts/*.zip
           body: |
-            KernelSU-Next v3.2.0
+            BakaSU (ReSukiSU)
+            Get the latest BakaSU manager from here: https://t.me/BakaSU_Grp/4
+            Tested APK: [BakaSU_v4.2.0-rc3_35231-armeabi-v7a-release.apk](https://t.me/BakaSU_Grp/4/323639)
             Droidspaces: https://github.com/ravindu644/Droidspaces-OSS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
