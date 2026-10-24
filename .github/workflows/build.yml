@@ -9,12 +9,15 @@ jobs:
     strategy:
       matrix:
         model: [beyond0lte, beyond1lte, beyond2lte, beyondx, d1, d1xks, d2s, d2x, d2xks]
-        oneui: [6, 7]
+        oneui: [6, 7, 8]
       fail-fast: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # One UI 8 is the bpf111 branch
+          ref: ${{ matrix.oneui == 8 && 'bpf111' || '' }}
 
       - name: Install dependencies
         run: |
