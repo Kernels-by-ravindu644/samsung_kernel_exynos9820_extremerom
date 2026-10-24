@@ -57,8 +57,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-[[ "${ONEUI_VERSION}" != "6" && "${ONEUI_VERSION}" != "7" ]] && \
-    error "Invalid --oneui value '${ONEUI_VERSION}'. Valid values: 6, 7"
+# One UI 8 is the bpf111 branch, One UI 6 and 7 are main
+[[ ! "${ONEUI_VERSION}" =~ ^[678]$ ]] && \
+    error "Invalid --oneui value '${ONEUI_VERSION}'. Valid values: 6, 7, 8"
 
 if [[ -z "${MODEL_CONFIGS[$MODEL]+_}" ]]; then
     error "Unknown model '$MODEL'. Valid models: ${!MODEL_CONFIGS[*]}"
@@ -144,6 +145,7 @@ pack_boot_image(){
     local KERNEL_OFFSET=0x00008000
     local OS_PATCH_LEVEL=2025-08
     local OS_VERSION=15.0.0
+    [[ "${ONEUI_VERSION}" == "8" ]] && OS_VERSION=16.0.0
     local PAGESIZE=2048
     local RAMDISK_OFFSET=0xF0000000
     local SECOND_OFFSET=0xF0000000
