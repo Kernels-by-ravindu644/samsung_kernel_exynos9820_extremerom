@@ -71,12 +71,22 @@ log "BUILD STARTED for model: ${MODEL} (${DEVICE_CONFIG})"
 git submodule update --init --recursive --remote --no-recommend-shallow
 
 # Customization
-KERNEL_NAME="ExtremeKernel-KSUNv3.2.0-Droidspaces"
+KERNEL_NAME="ExtremeKernel-ravindu644"
 BUILD_DATE="$(date +"%d-%m-%Y_%H-%M-%S")"
 
 # Export core variables
 export KERNEL_ROOT="$(dirname "$(readlink -f "$0")")"
 export ARCH=arm64
+
+# generate localversion
+BUILD_VERSION=$(git log -1 --pretty=%h 2>/dev/null)
+if [ -z "$BUILD_VERSION" ]; then
+    export BUILD_VERSION="dev"
+fi
+cat << EOF > "${KERNEL_ROOT}/arch/arm64/configs/version.config"
+CONFIG_LOCALVERSION_AUTO=n
+CONFIG_LOCALVERSION="${KERNEL_NAME}-${BUILD_VERSION}"
+EOF
 
 # Prepare build environment
 mkdir -p "${KERNEL_ROOT}/out" "${KERNEL_ROOT}/build" "${HOME}/toolchains"
@@ -107,7 +117,7 @@ build_kernel(){
     local ONEUI6_CONFIG=""
     [[ "${ONEUI_VERSION}" == "6" ]] && ONEUI6_CONFIG="oneui6.config"
 
-    make "${BUILD_OPTIONS[@]}" exynos9820_defconfig "${DEVICE_CONFIG}" custom.config droidspaces.config ${ONEUI6_CONFIG}
+    make "${BUILD_OPTIONS[@]}" exynos9820_defconfig "${DEVICE_CONFIG}" custom.config version.config droidspaces.config ${ONEUI6_CONFIG}
 
     [[ "${SKIP_MENUCONFIG}" == false ]] && make "${BUILD_OPTIONS[@]}" menuconfig
 

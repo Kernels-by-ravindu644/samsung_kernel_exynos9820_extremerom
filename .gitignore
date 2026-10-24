@@ -134,3 +134,4 @@ kernel/configs/android-*.cfg
 *.patch
 *.rej
 *.orig
+/arch/arm64/configs/version.config
