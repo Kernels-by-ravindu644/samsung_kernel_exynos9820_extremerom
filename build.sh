@@ -86,7 +86,7 @@ if [ -z "$BUILD_VERSION" ]; then
 fi
 cat << EOF > "${KERNEL_ROOT}/arch/arm64/configs/version.config"
 CONFIG_LOCALVERSION_AUTO=n
-CONFIG_LOCALVERSION="${KERNEL_NAME}-${BUILD_VERSION}"
+CONFIG_LOCALVERSION="-${KERNEL_NAME}-${BUILD_VERSION}"
 EOF
 
 # Prepare build environment
@@ -111,6 +111,8 @@ export BUILD_OPTIONS=(
     HOSTCXX=g++
     CC="${BUILD_CC}"
     CLANG_TRIPLE=aarch64-linux-gnu-
+    # set but empty, so scripts/setlocalversion does not append "+"
+    LOCALVERSION=
 )
 
 build_kernel(){
