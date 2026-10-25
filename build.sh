@@ -69,7 +69,7 @@ DEVICE_CONFIG="${MODEL_CONFIGS[$MODEL]}"
 log "BUILD STARTED for model: ${MODEL} (${DEVICE_CONFIG})"
 
 # Init submodules
-git submodule update --init --recursive --remote --no-recommend-shallow
+git submodule update --init --recursive --no-recommend-shallow
 
 # Customization
 KERNEL_NAME="ExtremeKernel-ravindu644"
