@@ -563,6 +563,32 @@ struct dst_entry *sk_dst_check(struct sock *sk, u32 cookie)
 }
 EXPORT_SYMBOL(sk_dst_check);
 
+static int sock_setbindtoifindex_locked(struct sock *sk, int ifindex)
+{
+	int ret = -ENOPROTOOPT;
+#ifdef CONFIG_NETDEVICES
+	struct net *net = sock_net(sk);
+
+	/* Sorry... */
+	ret = -EPERM;
+	if (!ns_capable(net->user_ns, CAP_NET_RAW))
+		goto out;
+
+	ret = -EINVAL;
+	if (ifindex < 0)
+		goto out;
+
+	sk->sk_bound_dev_if = ifindex;
+	sk_dst_reset(sk);
+
+	ret = 0;
+
+out:
+#endif
+
+	return ret;
+}
+
 static int sock_setbindtodevice(struct sock *sk, char __user *optval,
 				int optlen)
 {
@@ -1162,6 +1188,10 @@ set_rcvbuf:
 			sock_valbool_flag(sk, SOCK_ZEROCOPY, valbool);
 		break;
 
+	case SO_BINDTOIFINDEX:
+		ret = sock_setbindtoifindex_locked(sk, val);
+		break;
+
 	default:
 		ret = -ENOPROTOOPT;
 		break;
@@ -1506,6 +1536,10 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 
 	case SO_ZEROCOPY:
 		v.val = sock_flag(sk, SOCK_ZEROCOPY);
+		break;
+
+	case SO_BINDTOIFINDEX:
+		v.val = sk->sk_bound_dev_if;
 		break;
 
 	default:
