@@ -1222,6 +1222,26 @@ EXPORT_SYMBOL(filp_close);
  * releasing the fd. This ensures that one clone task can't release
  * an fd while another clone is opening it.
  */
+/**
+ * close_range() - Close all file descriptors in a given range.
+ *
+ * @fd:     starting file descriptor to close
+ * @max_fd: last file descriptor to close
+ * @flags:  reserved for future extensions
+ *
+ * This closes a range of file descriptors. All file descriptors
+ * from @fd up to and including @max_fd are closed.
+ * Currently, errors to close a given file descriptor are ignored.
+ */
+SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
+		unsigned int, flags)
+{
+	if (flags)
+		return -EINVAL;
+
+	return __close_range(current->files, fd, max_fd);
+}
+
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
 	int retval = __close_fd(current->files, fd);
