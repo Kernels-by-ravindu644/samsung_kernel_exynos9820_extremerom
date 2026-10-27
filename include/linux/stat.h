@@ -39,6 +39,7 @@ struct kstat {
 	u64		ino;
 	dev_t		dev;
 	dev_t		rdev;
+	u64		mnt_id;
 	kuid_t		uid;
 	kgid_t		gid;
 	loff_t		size;
