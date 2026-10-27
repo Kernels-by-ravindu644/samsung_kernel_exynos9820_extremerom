@@ -736,9 +736,11 @@ __SYSCALL(__NR_statx,     sys_statx)
 __SYSCALL(__NR_pidfd_send_signal, sys_pidfd_send_signal)
 #define __NR_pidfd_open 434
 __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
+#define __NR_faccessat2 439
+__SYSCALL(__NR_faccessat2, sys_faccessat2)
 
 #undef __NR_syscalls
-#define __NR_syscalls 435
+#define __NR_syscalls 440
 
 /*
  * All syscalls below here should go away really,
